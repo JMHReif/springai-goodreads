@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -38,12 +37,11 @@ public class ReviewController {
         List<Document> results = vectorStore.similaritySearch(SearchRequest.query(searchPhrase).withTopK(10));
 
         Iterable<Review> reviewList = repo.findBooks(results.stream().map(Document::getId).collect(Collectors.toList()));
-        System.out.println("----- CONTEXT -----");
-        reviewList.forEach(r -> System.out.println(r));
 
         var template = new PromptTemplate("""
                 You are providing book recommendations for books with reviews similar to the searched phrase.
-                Respond with information from the CONTEXT section below, no matter what.
+                Always respond with information from the CONTEXT section below.
+                Do not add titles from external sources.
                 If you are not sure about an answer, list the title and say that you are unsure.
                                 
                 CONTEXT:
