@@ -1,0 +1,24 @@
+= Spring AI application with Spring Data Neo4j
+
+This is an example application using Spring AI, Spring Data Neo4j, and Goodreads book data.
+
+== Data set
+
+Data is maintained and pulled from a public data source (more info coming soon!). An example of the data model is shown below.
+
+image::src/main/resources/goodreads-data-model.png[]
+
+For this project, we are focusing on the Book and Review entities and the relationship between them.
+
+== Presentation
+
+PDF versions of accompanying presentations are published to SpeakerDeck.
+
+* (COMING SOON!)
+
+== Resources
+* Site: https://dev.neo4j.com/aura-java[Neo4j Aura^]
+* Documentation: https://docs.spring.io/spring-ai/reference/api/vectordbs/neo4j.html[Spring AI Neo4j Vector Store^]
+* Guide: https://neo4j.com/labs/genai-ecosystem/spring-ai[Spring AI Neo4j^]
+* Online training: https://graphacademy.neo4j.com/categories/llms/[GraphAcademy LLM courses^]
+* Documentation: https://platform.openai.com/docs/guides/embeddings[OpenAI Embeddings^]
