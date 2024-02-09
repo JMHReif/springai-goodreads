@@ -19,13 +19,6 @@ public class SpringaiGoodreadsApplication {
 	}
 
 	@Bean
-	public Neo4jVectorStore vectorStore(Driver driver, EmbeddingClient embeddingClient) {
-
-		return new Neo4jVectorStore(driver, embeddingClient,
-				Neo4jVectorStore.Neo4jVectorStoreConfig.builder().withLabel("Review").build());
-	}
-
-	@Bean
 	public Driver driver() {
 		return GraphDatabase.driver(System.getenv("SPRING_NEO4J_URI"),
 				AuthTokens.basic(System.getenv("SPRING_NEO4J_AUTHENTICATION_USERNAME"),
@@ -35,5 +28,12 @@ public class SpringaiGoodreadsApplication {
 	@Bean
 	public EmbeddingClient embeddingClient() {
 		return new OpenAiEmbeddingClient(new OpenAiApi(System.getenv("SPRING_AI_OPENAI_API_KEY")));
+	}
+
+	@Bean
+	public Neo4jVectorStore vectorStore(Driver driver, EmbeddingClient embeddingClient) {
+
+		return new Neo4jVectorStore(driver, embeddingClient,
+				Neo4jVectorStore.Neo4jVectorStoreConfig.builder().withLabel("Review").build());
 	}
 }

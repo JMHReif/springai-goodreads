@@ -41,12 +41,12 @@ public class ReviewController {
         var template = new PromptTemplate("""
                 You are providing book recommendations for books with reviews similar to the searched phrase.
                 Always respond with information from the CONTEXT section below.
-                Do not add titles from external sources.
-                If you are not sure about an answer, list the title and say that you are unsure.
-                                
+                Do not add information from external sources.
+                If you are not sure about an answer, list the book title and say that you are unsure.
+                
                 CONTEXT:
                 {context}
-                                
+                
                 QUESTION:
                 Could you provide some book recommendations with {searchPhrase}?
                 """, Map.of("context", reviewList, "searchPhrase", searchPhrase));
