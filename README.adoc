@@ -44,6 +44,7 @@ HTTPie^] command line tool, but you can use `curl` similarly.
 
 PDF versions of accompanying presentations are published to SpeakerDeck.
 
+* https://speakerdeck.com/jmhreif/hallucination-free-zone-llms-plus-graph-databases-got-your-back[ACM Chicago (Feb 2024)^]
 * https://speakerdeck.com/jmhreif/improved-results-with-vector-search-in-knowledge-graphs[Data Science KC (Feb 2024)^]
 
 == Resources
