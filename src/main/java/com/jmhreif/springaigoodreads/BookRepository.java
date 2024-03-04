@@ -5,9 +5,9 @@ import org.springframework.data.neo4j.repository.query.Query;
 
 import java.util.List;
 
-public interface ReviewRepository extends Neo4jRepository<Review, String> {
-    @Query("MATCH (r:Review)-[rel:WRITTEN_FOR]->(b:Book) " +
+public interface BookRepository extends Neo4jRepository<Book, String> {
+    @Query("MATCH (b:Book)<-[rel:WRITTEN_FOR]-(r:Review) " +
             "WHERE r.review_id IN $reviewIds " +
-            "RETURN r, collect(rel), collect(b)")
-    Iterable<Review> findBooks(List<String> reviewIds);
+            "RETURN b, collect(rel), collect(r);")
+    List<Book> findBooks(List<String> reviewIds);
 }

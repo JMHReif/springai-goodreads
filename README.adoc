@@ -27,14 +27,14 @@ To run the application, you will need the following:
 
 Once that's set up, execute the application with `./mvnw spring-boot:run`.
 
-You can test a few different things. The `/llm` endpoint only sends the question to the LLM, and the `/rag` endpoint goes to Neo4j before forwarding the returned graph data to the LLM for formatting the response. Here are some ideas for values to test the `/rag` endpoint:
+You can test a few different things. The `/hello` endpoint only sends the question to the LLM, and the `/rag` endpoint goes to Neo4j before forwarding the returned graph data to the LLM for formatting the response. Here are some ideas for values to test the `/rag` endpoint:
 
 ```
-http ":8080/rag?searchPhrase=fairytale%20ending"
+http ":8080/rag?searchPhrase=happy%20ending"
 
-http ":8080/rag?searchPhrase=jedi”
+http ":8080/rag?searchPhrase=jedi"
 
-http ":8080/rag?searchPhrase=dragons”
+http ":8080/rag?searchPhrase=dragons"
 ```
 
 *Note:* The above commands are using the https://httpie.io/[
