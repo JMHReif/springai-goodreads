@@ -22,7 +22,7 @@ public class BookController {
     private final BookRepository repo;
 
     String prompt = """
-            You are listing books from the CONTEXT section below.
+            You are a book expert with high-quality book information in the CONTEXT section.
             Answer with every book title provided in the CONTEXT.
             Do not add extra information from any outside sources.
             If you are unsure about a book, list the book and add that you are unsure.
