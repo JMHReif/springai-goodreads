@@ -7,7 +7,8 @@ import java.util.List;
 
 public interface BookRepository extends Neo4jRepository<Book, String> {
     @Query("MATCH (b:Book)<-[rel:WRITTEN_FOR]-(r:Review) " +
-            "WHERE r.review_id IN $reviewIds " +
+            "WHERE r.id IN $reviewIds " +
+            "AND r.text <> 'RTC' " +
             "RETURN b, collect(rel), collect(r);")
     List<Book> findBooks(List<String> reviewIds);
 }

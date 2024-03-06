@@ -22,19 +22,17 @@ public class BookController {
     private final BookRepository repo;
 
     String prompt = """
-                You are providing book recommendations for books with reviews containing the searched phrase.
-                Always respond with information from the CONTEXT section below.
-                Do not add extra information from any outside sources.
-                List each book title from the CONTEXT section below.
-                Provide as much information as possible from the CONTEXT section, but nothing more.
-                If you are unsure about a book, go ahead and list the title and add that you are unsure.
-                
-                CONTEXT:
-                {context}
-                
-                QUESTION:
-                Could you provide some book recommendations containing {searchPhrase}?
-                """;
+            You are listing books from the CONTEXT section below.
+            Answer with every book title provided in the CONTEXT.
+            Do not add extra information from any outside sources.
+            If you are unsure about a book, list the book and add that you are unsure.
+            
+            CONTEXT:
+            {context}
+            
+            PHRASE:
+            {searchPhrase}
+            """;
 
     public BookController(OpenAiChatClient client, Neo4jVectorStore vectorStore, BookRepository repo) {
         this.client = client;
@@ -62,7 +60,7 @@ public class BookController {
     //Vector similarity search ONLY! Not valuable here because embeddings are on Review text, not books
     @GetMapping("/vector")
     public String generateSimilarityResponse(@RequestParam String searchPhrase) {
-        List<Document> results = vectorStore.similaritySearch(SearchRequest.query(searchPhrase).withTopK(10));
+        List<Document> results = vectorStore.similaritySearch(SearchRequest.query(searchPhrase).withTopK(5));
 
         var template = new PromptTemplate(prompt, Map.of("context", results, "searchPhrase", searchPhrase));
         System.out.println("----- PROMPT -----");
@@ -74,11 +72,11 @@ public class BookController {
     //Retrieval Augmented Generation with Neo4j - vector search + retrieval query for related context
     @GetMapping("/rag")
     public String generateResponseWithContext(@RequestParam String searchPhrase) {
-        List<Document> results = vectorStore.similaritySearch(SearchRequest.query(searchPhrase).withTopK(10));
+        List<Document> results = vectorStore.similaritySearch(SearchRequest.query(searchPhrase).withTopK(5).withSimilarityThreshold(0.8));
 
-        List<Book> reviewList = repo.findBooks(results.stream().map(Document::getId).collect(Collectors.toList()));
+        List<Book> bookList = repo.findBooks(results.stream().map(Document::getId).collect(Collectors.toList()));
 
-        var template = new PromptTemplate(prompt, Map.of("context", reviewList, "searchPhrase", searchPhrase));
+        var template = new PromptTemplate(prompt, Map.of("context", bookList.stream().map(b -> b.toString()).collect(Collectors.joining("\n")), "searchPhrase", searchPhrase));
         System.out.println("----- PROMPT -----");
         System.out.println(template.render());
 
