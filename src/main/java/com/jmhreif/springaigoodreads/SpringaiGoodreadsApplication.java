@@ -34,6 +34,9 @@ public class SpringaiGoodreadsApplication {
 	public Neo4jVectorStore vectorStore(Driver driver, EmbeddingClient embeddingClient) {
 
 		return new Neo4jVectorStore(driver, embeddingClient,
-				Neo4jVectorStore.Neo4jVectorStoreConfig.builder().withLabel("Review").build());
+				Neo4jVectorStore.Neo4jVectorStoreConfig.builder()
+						.withLabel("Review")
+						.withIndexName("review-embedding-index")
+						.build());
 	}
 }
