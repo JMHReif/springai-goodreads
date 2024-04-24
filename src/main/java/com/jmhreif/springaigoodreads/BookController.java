@@ -61,6 +61,8 @@ public class BookController {
     @GetMapping("/vector")
     public String generateSimilarityResponse(@RequestParam String searchPhrase) {
         List<Document> results = vectorStore.similaritySearch(SearchRequest.query(searchPhrase).withTopK(5));
+        System.out.println("--- Results ---");
+        System.out.println(results);
 
         var template = new PromptTemplate(prompt, Map.of("context", results, "searchPhrase", searchPhrase));
         System.out.println("----- PROMPT -----");
@@ -75,6 +77,8 @@ public class BookController {
         List<Document> results = vectorStore.similaritySearch(SearchRequest.query(searchPhrase).withTopK(5).withSimilarityThreshold(0.8));
 
         List<Book> bookList = repo.findBooks(results.stream().map(Document::getId).collect(Collectors.toList()));
+        System.out.println("--- ReviewIds ---");
+        System.out.println(bookList);
 
         var template = new PromptTemplate(prompt, Map.of("context", bookList.stream().map(b -> b.toString()).collect(Collectors.joining("\n")), "searchPhrase", searchPhrase));
         System.out.println("----- PROMPT -----");
