@@ -15,7 +15,7 @@ For this project, we are focusing on the Book and Review entities and the relati
 There were a few "gotchas" I found as I built this application.
 
 1. Create a specific `Neo4jVectorStore` bean, even though the integration test in the https://neo4j.com/labs/genai-ecosystem/spring-ai/[guide^] shows a generic VectorStore one.
-2. Spring AI with Neo4j requires a vector index name of `spring-ai-document-index`. There is a https://github.com/spring-projects/spring-ai/pull/301[pull request^] to allow custom configuration of the index name, but it is not yet merged (as of Feb 9, 2024).
+2. Spring AI with Neo4j uses a default vector index name of `spring-ai-document-index` and default entity type of `Document`. You can customize these with the `.withIndexName("<index-name>")` and `.withLabel("<label>")` methods attached to the Neo4jVectorStore configuration.
 3. Spring AI requires property names of `id` and `text` to return in the list of Documents from the similaritySearch method (no matter what label is configured for the Neo4jVectorStore bean). If your properties are named something else, the Spring app cannot map them from the Neo4j node to the expected Document object. You can refactor the data in Neo4j to change the property names to `id` and `text`.
 
 == Running and testing this project
