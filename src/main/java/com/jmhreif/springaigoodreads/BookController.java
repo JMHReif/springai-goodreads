@@ -2,7 +2,7 @@ package com.jmhreif.springaigoodreads;
 
 import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.ai.document.Document;
-import org.springframework.ai.openai.OpenAiChatClient;
+import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.ai.vectorstore.Neo4jVectorStore;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/")
 public class BookController {
-    private final OpenAiChatClient client;
+    private final OpenAiChatModel chatModel;
     private final Neo4jVectorStore vectorStore;
     private final BookRepository repo;
 
@@ -34,8 +34,8 @@ public class BookController {
             {searchPhrase}
             """;
 
-    public BookController(OpenAiChatClient client, Neo4jVectorStore vectorStore, BookRepository repo) {
-        this.client = client;
+    public BookController(OpenAiChatModel chatModel, Neo4jVectorStore vectorStore, BookRepository repo) {
+        this.chatModel = chatModel;
         this.vectorStore = vectorStore;
         this.repo = repo;
     }
@@ -43,7 +43,7 @@ public class BookController {
     //Test call for generic call to the LLM
     @GetMapping("/hello")
     public String helloAIWorld(@RequestParam(defaultValue = "What is the history of the violin?") String question) {
-        return client.call(question);
+        return chatModel.call(question);
     }
 
     //Provide prompt to LLM for book recommendations
@@ -54,7 +54,7 @@ public class BookController {
         System.out.println("----- PROMPT -----");
         System.out.println(template.render());
 
-        return client.call(template.create().getContents());
+        return chatModel.call(template.create().getContents());
     }
 
     //Vector similarity search ONLY! Not valuable here because embeddings are on Review text, not books
@@ -68,7 +68,7 @@ public class BookController {
         System.out.println("----- PROMPT -----");
         System.out.println(template.render());
 
-        return client.call(template.create().getContents());
+        return chatModel.call(template.create().getContents());
     }
 
     //Retrieval Augmented Generation with Neo4j - vector search + retrieval query for related context
@@ -84,7 +84,7 @@ public class BookController {
         System.out.println("----- PROMPT -----");
         System.out.println(template.render());
 
-        return client.call(template.create().getContents());
+        return chatModel.call(template.create().getContents());
 
     }
 }
