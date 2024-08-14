@@ -3,7 +3,6 @@ package com.jmhreif.springaigoodreads;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.ai.document.Document;
-import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.ai.vectorstore.Neo4jVectorStore;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,14 +22,12 @@ public class BookController {
     private final BookRepository repo;
 
     String prompt = """
-            You are a book expert with high-quality book information in the CONTEXT section.
-            Answer with every book title provided in the CONTEXT.
-            Do not add extra information from any outside sources.
-            If you are unsure about a book, list the book and add that you are unsure.
-            
+            You are a book expert providing recommendations from high-quality book information in the CONTEXT section.
+            Please summarize the books provided in the context section.
+                        
             CONTEXT:
             {context}
-            
+                        
             PHRASE:
             {searchPhrase}
             """;
@@ -61,7 +58,7 @@ public class BookController {
     //Vector similarity search ONLY! Not valuable here because embeddings are on Review text, not books
     @GetMapping("/vector")
     public String generateSimilarityResponse(@RequestParam String searchPhrase) {
-        List<Document> results = vectorStore.similaritySearch(SearchRequest.query(searchPhrase).withTopK(5));
+        List<Document> results = vectorStore.similaritySearch(SearchRequest.query(searchPhrase).withTopK(10));
         System.out.println("--- Results ---");
         System.out.println(results);
 
@@ -75,10 +72,10 @@ public class BookController {
     //Retrieval Augmented Generation with Neo4j - vector search + retrieval query for related context
     @GetMapping("/rag")
     public String generateResponseWithContext(@RequestParam String searchPhrase) {
-        List<Document> results = vectorStore.similaritySearch(SearchRequest.query(searchPhrase).withTopK(5).withSimilarityThreshold(0.8));
+        List<Document> results = vectorStore.similaritySearch(SearchRequest.query(searchPhrase).withTopK(10));
 
         List<Book> bookList = repo.findBooks(results.stream().map(Document::getId).collect(Collectors.toList()));
-        System.out.println("--- ReviewIds ---");
+        System.out.println("--- Book list ---");
         System.out.println(bookList);
 
         var template = new PromptTemplate(prompt, Map.of("context", bookList.stream().map(b -> b.toString()).collect(Collectors.joining("\n")), "searchPhrase", searchPhrase));
