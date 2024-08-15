@@ -46,6 +46,7 @@ HTTPie^] command line tool, but you can use `curl` similarly.
 
 PDF versions of accompanying presentations are published to SpeakerDeck.
 
+* https://speakerdeck.com/jmhreif/ai-enabled-apps-practical-uses-of-ai-in-applications[DevUp Conference (Aug 2024)^]
 * https://speakerdeck.com/jmhreif/pass-or-play-what-does-genai-mean-for-the-java-developer-4aee20e0-f6ba-4f80-8c8f-3be7226ca7df[OKC JUG (May 2024)^]
 * https://speakerdeck.com/jmhreif/pass-or-play-what-does-genai-mean-for-the-java-developer[SFJUG meetup (Mar 2024)^]
 * https://speakerdeck.com/jmhreif/hallucination-free-zone-llms-plus-graph-databases-got-your-back[ACM Chicago (Feb 2024)^]
