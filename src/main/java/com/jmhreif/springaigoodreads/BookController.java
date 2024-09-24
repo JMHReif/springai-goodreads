@@ -78,7 +78,9 @@ public class BookController {
         System.out.println("--- Book list ---");
         System.out.println(bookList);
 
-        var template = new PromptTemplate(prompt, Map.of("context", bookList.stream().map(b -> b.toString()).collect(Collectors.joining("\n")), "searchPhrase", searchPhrase));
+        var template = new PromptTemplate(prompt,
+                Map.of("context", bookList.stream().map(Record::toString).collect(Collectors.joining("\n")),
+                        "searchPhrase", searchPhrase));
         System.out.println("----- PROMPT -----");
         System.out.println(template.render());
 
