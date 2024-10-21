@@ -23,7 +23,6 @@ public class SpringaiGoodreadsApplication {
 
 	@Bean
 	public Neo4jVectorStore vectorStore(Driver driver, EmbeddingModel embeddingModel) {
-
 		return new Neo4jVectorStore(driver, embeddingModel,
 				Neo4jVectorStore.Neo4jVectorStoreConfig.builder()
 						.withLabel("Review")

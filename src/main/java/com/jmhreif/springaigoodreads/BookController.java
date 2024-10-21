@@ -24,10 +24,10 @@ public class BookController {
     String prompt = """
             You are a book expert providing recommendations from high-quality book information in the CONTEXT section.
             Please summarize the books provided in the context section.
-                        
+            
             CONTEXT:
             {context}
-                        
+            
             PHRASE:
             {searchPhrase}
             """;
@@ -72,14 +72,14 @@ public class BookController {
     //Retrieval Augmented Generation with Neo4j - vector search + retrieval query for related context
     @GetMapping("/rag")
     public String generateResponseWithContext(@RequestParam String searchPhrase) {
-        List<Document> results = vectorStore.similaritySearch(SearchRequest.query(searchPhrase).withTopK(10));
+        List<Document> results = vectorStore.doSimilaritySearch(SearchRequest.query(searchPhrase).withTopK(10));
 
         List<Book> bookList = repo.findBooks(results.stream().map(Document::getId).collect(Collectors.toList()));
         System.out.println("--- Book list ---");
         System.out.println(bookList);
 
         var template = new PromptTemplate(prompt,
-                Map.of("context", bookList.stream().map(Record::toString).collect(Collectors.joining("\n")),
+                Map.of("context", bookList.stream().map(Book::toString).collect(Collectors.joining("\n")),
                         "searchPhrase", searchPhrase));
         System.out.println("----- PROMPT -----");
         System.out.println(template.render());
