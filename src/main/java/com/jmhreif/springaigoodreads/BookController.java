@@ -48,7 +48,7 @@ public class BookController {
                 .query(searchPhrase).topK(5).similarityThreshold(0.8)
                 .build());
 
-        List<Book> bookList = repo.findBooks(results.stream().map(Document::getId).collect(Collectors.toList()));
+        List<Book> bookList = repo.findBooks(results.stream().map(Document::getId).toList());
         System.out.println("--- Book list ---");
         System.out.println(bookList);
 
