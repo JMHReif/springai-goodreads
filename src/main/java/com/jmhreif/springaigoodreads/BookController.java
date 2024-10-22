@@ -72,9 +72,9 @@ public class BookController {
     //Retrieval Augmented Generation with Neo4j - vector search + retrieval query for related context
     @GetMapping("/rag")
     public String generateResponseWithContext(@RequestParam String searchPhrase) {
-        List<Document> results = vectorStore.doSimilaritySearch(SearchRequest.query(searchPhrase).withTopK(10));
+        List<Document> results = vectorStore.doSimilaritySearch(SearchRequest.query(searchPhrase));
 
-        List<Book> bookList = repo.findBooks(results.stream().map(Document::getId).collect(Collectors.toList()));
+        List<Book> bookList = repo.findBooks(results.stream().map(Document::getId).toList());
         System.out.println("--- Book list ---");
         System.out.println(bookList);
 
