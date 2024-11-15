@@ -34,7 +34,7 @@ http ":8080/rag?searchPhrase=happy%20ending"
 
 http ":8080/rag?searchPhrase=encouragement"
 
-http ":8080/rag?searchPhrase=high%tech"
+http ":8080/rag?searchPhrase=high tech"
 
 http ":8080/rag?searchPhrase=caffeine"
 ```
