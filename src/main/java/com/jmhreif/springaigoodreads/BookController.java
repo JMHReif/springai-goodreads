@@ -42,7 +42,7 @@ public class BookController {
     }
 
     //Retrieval Augmented Generation with Neo4j - vector search + retrieval query for related context
-    @GetMapping("/rag")
+    @GetMapping("/graph")
     public String generateResponseWithContext(@RequestParam String searchPhrase) {
         List<Document> results = vectorStore.similaritySearch(SearchRequest.builder()
                 .query(searchPhrase).topK(5).similarityThreshold(0.8)
