@@ -14,9 +14,8 @@ For this project, we are focusing on the Book and Review entities and the relati
 
 There were a few "gotchas" I found as I built this application.
 
-1. Create a specific `Neo4jVectorStore` bean, even though the integration test in the https://neo4j.com/labs/genai-ecosystem/spring-ai/[guide^] shows a generic VectorStore one.
-2. Spring AI with Neo4j uses a default vector index name of `spring-ai-document-index` and default entity type of `Document`. You can customize these with the `.withIndexName("<index-name>")` and `.withLabel("<label>")` methods attached to the Neo4jVectorStore configuration.
-3. Spring AI requires property names of `id` and `text` to return in the list of Documents from the similaritySearch method (no matter what label is configured for the Neo4jVectorStore bean). If your properties are named something else, the Spring app cannot map them from the Neo4j node to the expected Document object. You can refactor the data in Neo4j to change the property names to `id` and `text`.
+1. Spring AI with Neo4j uses a default vector index name of `spring-ai-document-index` and default entity type of `Document`. You can customize these with a custom `Neo4jVectorStore` bean or with configuration properties (`application.properties` file).
+2. Spring AI requires property names of `id` and `text` to return in the list of Documents from the similaritySearch method (no matter what label is configured for the Neo4jVectorStore bean). If your properties are named something else, the Spring app cannot map them from the Neo4j node to the expected Document object. You can refactor the data in Neo4j to change the property names to `id` and `text`.
 
 == Running and testing this project
 
@@ -27,16 +26,16 @@ To run the application, you will need the following:
 
 Once that's set up, execute the application with `./mvnw spring-boot:run`.
 
-You can test a few different things. The `/hello` endpoint only sends the question to the LLM as a test. The `/rag` endpoint goes to Neo4j before forwarding the returned graph data to the LLM for formatting the response. The `/llm` endpoint only sends the prompt to the LLM, and the `/vector` only retrieves reviews from the vector search in Neo4j. Here are some ideas for values to test the `/rag` endpoint:
+You can test a few different things. The `/hello` endpoint only sends the question to the LLM as a test. The `/graph` endpoint goes to Neo4j before forwarding the returned graph data to the LLM for formatting the response. The `/llm` endpoint only sends the prompt to the LLM, and the `/vector` only retrieves reviews from the vector search in Neo4j. Here are some ideas for values to test the `/graph` endpoint:
 
 ```
-http ":8080/rag?searchPhrase=happy%20ending"
+http ":8080/graph?searchPhrase=happy%20ending"
 
-http ":8080/rag?searchPhrase=encouragement"
+http ":8080/graph?searchPhrase=encouragement"
 
-http ":8080/rag?searchPhrase=high tech"
+http ":8080/graph?searchPhrase=high tech"
 
-http ":8080/rag?searchPhrase=caffeine"
+http ":8080/graph?searchPhrase=caffeine"
 ```
 
 *Note:* The above commands are using the https://httpie.io/[

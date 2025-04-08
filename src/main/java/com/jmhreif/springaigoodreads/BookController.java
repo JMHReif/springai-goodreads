@@ -3,7 +3,7 @@ package com.jmhreif.springaigoodreads;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.ai.document.Document;
-import org.springframework.ai.vectorstore.Neo4jVectorStore;
+import org.springframework.ai.vectorstore.neo4j.Neo4jVectorStore;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -58,7 +58,7 @@ public class BookController {
     //Vector similarity search ONLY! Not valuable here because embeddings are on Review text, not books
     @GetMapping("/vector")
     public String generateSimilarityResponse(@RequestParam String searchPhrase) {
-        List<Document> results = vectorStore.similaritySearch(SearchRequest.query(searchPhrase).withTopK(10));
+        List<Document> results = vectorStore.doSimilaritySearch(SearchRequest.builder().query(searchPhrase).build());
         System.out.println("--- Results ---");
         System.out.println(results);
 
@@ -70,10 +70,9 @@ public class BookController {
     }
 
     //Retrieval Augmented Generation with Neo4j - vector search + retrieval query for related context
-    @GetMapping("/rag")
+    @GetMapping("/graph")
     public String generateResponseWithContext(@RequestParam String searchPhrase) {
-        List<Document> results = vectorStore.doSimilaritySearch(SearchRequest.query(searchPhrase));
-
+        List<Document> results = vectorStore.doSimilaritySearch(SearchRequest.builder().query(searchPhrase).build());
         List<Book> bookList = repo.findBooks(results.stream().map(Document::getId).toList());
         System.out.println("--- Book list ---");
         System.out.println(bookList);
