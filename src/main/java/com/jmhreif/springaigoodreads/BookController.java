@@ -26,6 +26,7 @@ public class BookController {
     private final ChatClient client;
     private final Neo4jVectorStore vectorStore;
     private final BookRepository repo;
+    private final BookRepository bookRepository;
 
     String prompt = """
             You are a book expert providing recommendations from high-quality book information provided.
@@ -35,10 +36,11 @@ public class BookController {
             {searchPhrase}
             """;
 
-    public BookController(ChatClient.Builder builder, Neo4jVectorStore vectorStore, BookRepository repo) {
+    public BookController(ChatClient.Builder builder, Neo4jVectorStore vectorStore, BookRepository repo, BookRepository bookRepository) {
         this.client = builder.build();
         this.vectorStore = vectorStore;
         this.repo = repo;
+        this.bookRepository = bookRepository;
     }
 
     //Retrieval Augmented Generation with Neo4j - vector search + retrieval query for related context
@@ -75,5 +77,19 @@ public class BookController {
                         new GraphRetrievalAdvisor(repo))
                 .call().content();
 
+    //testing advisors
+    @GetMapping("/graph2")
+    public String generateResponseWithContext2(@RequestParam String searchPhrase) {
+        String prompt2 = """
+            You are a book expert providing recommendations from high-quality book information provided.
+            Please summarize the books provided for the user's search phrase.
+            """;
+
+        return client.prompt(prompt2)
+                .advisors(new SimpleLoggerAdvisor(),
+                        new QuestionAnswerAdvisor(vectorStore),
+                        new GraphRetrievalAdvisor(bookRepository))
+                .user(searchPhrase)
+                .call().content();
     }
 }
