@@ -48,11 +48,12 @@ public class BookController {
     @GetMapping("/llm")
     public String generateLLMResponse(@RequestParam String searchPhrase) {
 
-        var template = new PromptTemplate(prompt, Map.of("context", "", "searchPhrase", searchPhrase));
+        var template = new PromptTemplate(prompt)
+                .create(Map.of("context", "", "searchPhrase", searchPhrase));
         System.out.println("----- PROMPT -----");
-        System.out.println(template.render());
+        System.out.println(template);
 
-        return client.prompt(template.create()).call().content();
+        return client.prompt(template).call().content();
     }
 
     //Vector similarity search ONLY! Not valuable here because embeddings are on Review text, not books
@@ -62,11 +63,12 @@ public class BookController {
         System.out.println("--- Results ---");
         System.out.println(results);
 
-        var template = new PromptTemplate(prompt, Map.of("context", results, "searchPhrase", searchPhrase));
+        var template = new PromptTemplate(prompt)
+                .create(Map.of("context", results, "searchPhrase", searchPhrase));
         System.out.println("----- PROMPT -----");
-        System.out.println(template.render());
+        System.out.println(template);
 
-        return client.prompt(template.create()).call().content();
+        return client.prompt(template).call().content();
     }
 
     //Retrieval Augmented Generation with Neo4j - vector search + retrieval query for related context
@@ -77,13 +79,13 @@ public class BookController {
         System.out.println("--- Book list ---");
         System.out.println(bookList);
 
-        var template = new PromptTemplate(prompt,
-                Map.of("context", bookList.stream().map(Book::toString).collect(Collectors.joining("\n")),
+        var template = new PromptTemplate(prompt)
+                .create(Map.of("context", bookList.stream().map(Book::toString).collect(Collectors.joining("\n")),
                         "searchPhrase", searchPhrase));
         System.out.println("----- PROMPT -----");
-        System.out.println(template.render());
+        System.out.println(template);
 
-        return client.prompt(template.create()).call().content();
+        return client.prompt(template).call().content();
 
     }
 }
