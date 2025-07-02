@@ -1,25 +1,20 @@
 package com.jmhreif.springaigoodreads;
 
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
 import org.springframework.ai.chat.prompt.PromptTemplate;
-import org.springframework.ai.document.Document;
-import org.springframework.ai.vectorstore.neo4j.Neo4jVectorStore;
-import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/")
 public class BookController {
     private final ChatClient client;
-    private final Neo4jVectorStore vectorStore;
-    private final BookRepository repo;
+    private final RAGTools ragTools;
 
     String prompt = """
             You are a book expert providing recommendations from high-quality book information in the CONTEXT section.
@@ -32,58 +27,25 @@ public class BookController {
             {searchPhrase}
             """;
 
-    public BookController(ChatClient.Builder builder, Neo4jVectorStore vectorStore, BookRepository repo) {
+    public BookController(ChatClient.Builder builder, RAGTools ragTools) {
         this.client = builder.build();
-        this.vectorStore = vectorStore;
-        this.repo = repo;
-    }
-
-    //Test call for generic call to the LLM
-    @GetMapping("/hello")
-    public String helloAIWorld(@RequestParam(defaultValue = "What is the history of the violin?") String question) {
-        return client.prompt().user(question).call().content();
-    }
-
-    //Provide prompt to LLM for book recommendations
-    @GetMapping("/llm")
-    public String generateLLMResponse(@RequestParam String searchPhrase) {
-
-        var template = new PromptTemplate(prompt, Map.of("context", "", "searchPhrase", searchPhrase));
-        System.out.println("----- PROMPT -----");
-        System.out.println(template.render());
-
-        return client.prompt(template.create()).call().content();
-    }
-
-    //Vector similarity search ONLY! Not valuable here because embeddings are on Review text, not books
-    @GetMapping("/vector")
-    public String generateSimilarityResponse(@RequestParam String searchPhrase) {
-        List<Document> results = vectorStore.doSimilaritySearch(SearchRequest.builder().query(searchPhrase).build());
-        System.out.println("--- Results ---");
-        System.out.println(results);
-
-        var template = new PromptTemplate(prompt, Map.of("context", results, "searchPhrase", searchPhrase));
-        System.out.println("----- PROMPT -----");
-        System.out.println(template.render());
-
-        return client.prompt(template.create()).call().content();
+        this.ragTools = ragTools;
     }
 
     //Retrieval Augmented Generation with Neo4j - vector search + retrieval query for related context
-    @GetMapping("/graph")
-    public String generateResponseWithContext(@RequestParam String searchPhrase) {
-        List<Document> results = vectorStore.doSimilaritySearch(SearchRequest.builder().query(searchPhrase).build());
-        List<Book> bookList = repo.findBooks(results.stream().map(Document::getId).toList());
-        System.out.println("--- Book list ---");
-        System.out.println(bookList);
+    @GetMapping("/graphTool")
+    public String generateResponseWithContext2(@RequestParam String searchPhrase) {
+        PromptTemplate prompt2 = new PromptTemplate("""
+            You are a book expert providing recommendations from high-quality book information provided.
+            Please summarize the books provided.
+            
+            PHRASE:
+            {searchPhrase}
+            """);
 
-        var template = new PromptTemplate(prompt,
-                Map.of("context", bookList.stream().map(Book::toString).collect(Collectors.joining("\n")),
-                        "searchPhrase", searchPhrase));
-        System.out.println("----- PROMPT -----");
-        System.out.println(template.render());
-
-        return client.prompt(template.create()).call().content();
-
+        return client.prompt(prompt2.create(Map.of("searchPhrase", searchPhrase)))
+                .advisors(new SimpleLoggerAdvisor())
+                .tools(ragTools)
+                .call().content();
     }
 }
