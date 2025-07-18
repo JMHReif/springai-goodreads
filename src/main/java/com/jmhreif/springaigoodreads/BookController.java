@@ -1,11 +1,16 @@
 package com.jmhreif.springaigoodreads;
 
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
+import org.springframework.ai.chat.client.advisor.api.Advisor;
+import org.springframework.ai.chat.client.advisor.api.CallAdvisor;
+import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
 import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.ai.document.Document;
-import org.springframework.ai.openai.OpenAiChatModel;
-import org.springframework.ai.vectorstore.Neo4jVectorStore;
+import org.springframework.ai.rag.advisor.RetrievalAugmentationAdvisor;
+import org.springframework.ai.rag.retrieval.search.VectorStoreDocumentRetriever;
 import org.springframework.ai.vectorstore.SearchRequest;
+import org.springframework.ai.vectorstore.neo4j.Neo4jVectorStore;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -23,13 +28,8 @@ public class BookController {
     private final BookRepository repo;
 
     String prompt = """
-            You are a book expert with high-quality book information in the CONTEXT section.
-            Answer with every book title provided in the CONTEXT.
-            Do not add extra information from any outside sources.
-            If you are unsure about a book, list the book and add that you are unsure.
-            
-            CONTEXT:
-            {context}
+            You are a book expert providing recommendations from high-quality book information provided.
+            Please summarize the books provided.
             
             PHRASE:
             {searchPhrase}
@@ -41,51 +41,45 @@ public class BookController {
         this.repo = repo;
     }
 
-    //Test call for generic call to the LLM
-    @GetMapping("/hello")
-    public String helloAIWorld(@RequestParam(defaultValue = "What is the history of the violin?") String question) {
-        return client.prompt().user(question).call().content();
-    }
-
-    //Provide prompt to LLM for book recommendations
-    @GetMapping("/llm")
-    public String generateLLMResponse(@RequestParam String searchPhrase) {
-
-        var template = new PromptTemplate(prompt, Map.of("context", "", "searchPhrase", searchPhrase));
-        System.out.println("----- PROMPT -----");
-        System.out.println(template.render());
-
-        return client.prompt(template.create()).call().content();
-    }
-
-    //Vector similarity search ONLY! Not valuable here because embeddings are on Review text, not books
-    @GetMapping("/vector")
-    public String generateSimilarityResponse(@RequestParam String searchPhrase) {
-        List<Document> results = vectorStore.similaritySearch(SearchRequest.query(searchPhrase).withTopK(5));
-        System.out.println("--- Results ---");
-        System.out.println(results);
-
-        var template = new PromptTemplate(prompt, Map.of("context", results, "searchPhrase", searchPhrase));
-        System.out.println("----- PROMPT -----");
-        System.out.println(template.render());
-
-        return client.prompt(template.create()).call().content();
-    }
-
     //Retrieval Augmented Generation with Neo4j - vector search + retrieval query for related context
     @GetMapping("/rag")
     public String generateResponseWithContext(@RequestParam String searchPhrase) {
-        List<Document> results = vectorStore.similaritySearch(SearchRequest.query(searchPhrase).withTopK(5).withSimilarityThreshold(0.8));
+        List<Document> results = vectorStore.similaritySearch(SearchRequest.builder()
+                .query(searchPhrase).topK(5).similarityThreshold(0.8)
+                .build());
 
         List<Book> bookList = repo.findBooks(results.stream().map(Document::getId).collect(Collectors.toList()));
         System.out.println("--- ReviewIds ---");
         System.out.println(bookList);
 
-        var template = new PromptTemplate(prompt, Map.of("context", bookList.stream().map(b -> b.toString()).collect(Collectors.joining("\n")), "searchPhrase", searchPhrase));
+        var template = new PromptTemplate(prompt).create(Map.of(
+                "context", bookList.stream().map(b -> b.toString()).collect(Collectors.joining("\n")),
+                "searchPhrase", searchPhrase));
         System.out.println("----- PROMPT -----");
-        System.out.println(template.render());
+        System.out.println(template);
 
-        return client.prompt(template.create()).call().content();
+        return client.prompt(template).call().content();
+
+    }
+
+    //Retrieval Augmented Generation with Neo4j - vector search + retrieval query for related context
+    @GetMapping("/graphAdvisor")
+    public String generateResponseWithContext2(@RequestParam String searchPhrase) {
+        var template = new PromptTemplate(prompt).create(Map.of("searchPhrase", searchPhrase));
+        System.out.println("----- PROMPT -----");
+        System.out.println(template);
+
+//        Advisor retrievalAdvisor = RetrievalAugmentationAdvisor.builder()
+//                .documentRetriever(VectorStoreDocumentRetriever.builder().vectorStore(vectorStore).build())
+//                .build();
+
+        return client.prompt(template)
+                .advisors(new SimpleLoggerAdvisor(),
+//                        new QuestionAnswerAdvisor(vectorStore),
+//                        retrievalAdvisor,
+                        new CustomVectorSearchAdvisor(vectorStore),
+                        new GraphRetrievalAdvisor())
+                .call().content();
 
     }
 }
