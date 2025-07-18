@@ -45,6 +45,7 @@ HTTPie^] command line tool, but you can use `curl` similarly.
 
 PDF versions of accompanying presentations are published to SpeakerDeck.
 
+* https://speakerdeck.com/jmhreif/genai-for-developers-what-you-need-to-know[UJUG (Jul 2025)^]
 * https://speakerdeck.com/jmhreif/pass-or-play-what-does-genai-mean-for-the-java-developer-9a8ca522-2750-4e1a-b9cf-af7559dbdae6[GatewayJUG (Apr 2025)^]
 * https://speakerdeck.com/jmhreif/pass-or-play-what-does-genai-mean-for-the-java-developer-a0c6257e-56d8-45cb-9019-658439807ef7[CJUG (Nov 2024)^]
 * https://speakerdeck.com/jmhreif/pass-or-play-what-does-genai-mean-for-the-java-developer-9d1a9e3c-0d1a-4650-9cf7-5271dc6a21f3[JConf (Sep 2024)^]
