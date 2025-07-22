@@ -6,9 +6,8 @@ import org.springframework.ai.chat.client.advisor.api.CallAdvisor;
 import org.springframework.ai.chat.client.advisor.api.CallAdvisorChain;
 import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.ai.chat.prompt.Prompt;
+import org.springframework.ai.document.Document;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,13 +20,19 @@ public class GraphRetrievalAdvisor implements CallAdvisor {
 
     @Override
     public ChatClientResponse adviseCall(ChatClientRequest chatClientRequest, CallAdvisorChain callAdvisorChain) {
-        var similarDocIds = (List<String>) chatClientRequest.context().get("similarDocIds");
-        // System.out.println("similarDocIds: " + similarDocIds);
+        // Get documents from QuestionAnswerAdvisor context
+        var documents = (List<Document>) chatClientRequest.context().get("qa_retrieved_documents");
+        
+        if (documents == null || documents.isEmpty()) {
+            System.out.println("No documents found in context, skipping graph retrieval");
+            return callAdvisorChain.nextCall(chatClientRequest);
+        }
+
+        // Extract document IDs from QuestionAnswerAdvisor
+        List<String> similarDocIds = documents.stream().map(Document::getId).collect(Collectors.toList());
 
         // Run graph retrieval query
         List<Book> bookList = repo.findBooks(similarDocIds);
-        // System.out.println("--- Book list ---");
-        // System.out.println(bookList);
 
         // Create system message with book context
         String bookContext = bookList.stream()
