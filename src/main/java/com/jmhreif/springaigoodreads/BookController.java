@@ -49,7 +49,7 @@ public class BookController {
                 .build());
 
         List<Book> bookList = repo.findBooks(results.stream().map(Document::getId).collect(Collectors.toList()));
-        System.out.println("--- ReviewIds ---");
+        System.out.println("--- Book list ---");
         System.out.println(bookList);
 
         var template = new PromptTemplate(prompt).create(Map.of(
@@ -66,19 +66,13 @@ public class BookController {
     @GetMapping("/graphAdvisor")
     public String generateResponseWithContext2(@RequestParam String searchPhrase) {
         var template = new PromptTemplate(prompt).create(Map.of("searchPhrase", searchPhrase));
-        System.out.println("----- PROMPT -----");
-        System.out.println(template);
-
-//        Advisor retrievalAdvisor = RetrievalAugmentationAdvisor.builder()
-//                .documentRetriever(VectorStoreDocumentRetriever.builder().vectorStore(vectorStore).build())
-//                .build();
+        // System.out.println("----- PROMPT -----");
+        // System.out.println(template);
 
         return client.prompt(template)
                 .advisors(new SimpleLoggerAdvisor(),
-//                        new QuestionAnswerAdvisor(vectorStore),
-//                        retrievalAdvisor,
-                        new CustomVectorSearchAdvisor(vectorStore),
-                        new GraphRetrievalAdvisor())
+                        new CustomVectorSearchAdvisor(vectorStore, searchPhrase),
+                        new GraphRetrievalAdvisor(repo))
                 .call().content();
 
     }
