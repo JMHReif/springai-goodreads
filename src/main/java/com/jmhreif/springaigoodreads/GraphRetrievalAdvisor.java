@@ -7,8 +7,6 @@ import org.springframework.ai.chat.client.advisor.api.CallAdvisorChain;
 import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.ai.chat.prompt.Prompt;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,7 +20,6 @@ public class GraphRetrievalAdvisor implements CallAdvisor {
     @Override
     public ChatClientResponse adviseCall(ChatClientRequest chatClientRequest, CallAdvisorChain callAdvisorChain) {
         var similarDocIds = (List<String>) chatClientRequest.context().get("similarDocIds");
-        // System.out.println("similarDocIds: " + similarDocIds);
 
         // Run graph retrieval query
         List<Book> bookList = repo.findBooks(similarDocIds);

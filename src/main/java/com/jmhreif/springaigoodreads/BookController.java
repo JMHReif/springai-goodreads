@@ -42,38 +42,14 @@ public class BookController {
     }
 
     //Retrieval Augmented Generation with Neo4j - vector search + retrieval query for related context
-    @GetMapping("/rag")
-    public String generateResponseWithContext(@RequestParam String searchPhrase) {
-        List<Document> results = vectorStore.similaritySearch(SearchRequest.builder()
-                .query(searchPhrase).topK(5).similarityThreshold(0.8)
-                .build());
-
-        List<Book> bookList = repo.findBooks(results.stream().map(Document::getId).collect(Collectors.toList()));
-        System.out.println("--- Book list ---");
-        System.out.println(bookList);
-
-        var template = new PromptTemplate(prompt).create(Map.of(
-                "context", bookList.stream().map(b -> b.toString()).collect(Collectors.joining("\n")),
-                "searchPhrase", searchPhrase));
-        System.out.println("----- PROMPT -----");
-        System.out.println(template);
-
-        return client.prompt(template).call().content();
-
-    }
-
-    //Retrieval Augmented Generation with Neo4j - vector search + retrieval query for related context
     @GetMapping("/graphAdvisor")
     public String generateResponseWithContext2(@RequestParam String searchPhrase) {
         var template = new PromptTemplate(prompt).create(Map.of("searchPhrase", searchPhrase));
-        // System.out.println("----- PROMPT -----");
-        // System.out.println(template);
 
         return client.prompt(template)
                 .advisors(new SimpleLoggerAdvisor(),
                         new CustomVectorSearchAdvisor(vectorStore, searchPhrase),
                         new GraphRetrievalAdvisor(repo))
                 .call().content();
-
     }
 }
