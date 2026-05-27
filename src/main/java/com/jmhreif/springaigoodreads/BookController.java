@@ -59,7 +59,7 @@ public class BookController {
     //Vector similarity search ONLY! Not valuable here because embeddings are on Review text, not books
     @GetMapping("/vector")
     public String generateSimilarityResponse(@RequestParam String searchPhrase) {
-        List<Document> results = vectorStore.doSimilaritySearch(SearchRequest.builder().query(searchPhrase).build());
+        List<Document> results = vectorStore.similaritySearch(SearchRequest.builder().query(searchPhrase).build());
         System.out.println("--- Results ---");
         System.out.println(results);
 
@@ -74,7 +74,7 @@ public class BookController {
     //Retrieval Augmented Generation with Neo4j - vector search + retrieval query for related context
     @GetMapping("/graph")
     public String generateResponseWithContext(@RequestParam String searchPhrase) {
-        List<Document> results = vectorStore.doSimilaritySearch(SearchRequest.builder().query(searchPhrase).build());
+        List<Document> results = vectorStore.similaritySearch(SearchRequest.builder().query(searchPhrase).build());
         List<Book> bookList = repo.findBooks(results.stream().map(Document::getId).toList());
         System.out.println("--- Book list ---");
         System.out.println(bookList);
