@@ -20,6 +20,7 @@ public class BookController {
     private final ChatClient client;
     private final Neo4jVectorStore vectorStore;
     private final BookRepository repo;
+    private final BookTools bookTools;
 
     String prompt = """
             You are a book expert providing recommendations from high-quality book information in the CONTEXT section.
@@ -32,10 +33,11 @@ public class BookController {
             {searchPhrase}
             """;
 
-    public BookController(ChatClient.Builder builder, Neo4jVectorStore vectorStore, BookRepository repo) {
+    public BookController(ChatClient.Builder builder, Neo4jVectorStore vectorStore, BookRepository repo, BookTools bookTools) {
         this.client = builder.build();
         this.vectorStore = vectorStore;
         this.repo = repo;
+        this.bookTools = bookTools;
     }
 
     //Test call for generic call to the LLM
@@ -69,6 +71,23 @@ public class BookController {
         System.out.println(template);
 
         return client.prompt(template).call().content();
+    }
+
+    //Agentic RAG - LLM decides when and how to call tools to find and summarize book recommendations
+    @GetMapping("/agent")
+    public String agent(@RequestParam String searchPhrase) {
+        return client.prompt()
+                .system("""
+                        You are a book expert assistant with access to a book database.
+                        Use the available tools to answer the user's request.
+                        You can search for books by semantic similarity, look up a user's reading history,
+                        and find books recommended by users with similar tastes.
+                        Combine multiple sources when helpful and explain why you are recommending each book.
+                        """)
+                .user(searchPhrase)
+                .tools(bookTools)
+                .call()
+                .content();
     }
 
     //Retrieval Augmented Generation with Neo4j - vector search + retrieval query for related context
